@@ -65,10 +65,11 @@ def coleta_informacao(qtd_rep):
         descricao = str(input("Descreva o serviço prestado: "))
         descricao_1 = ''
         descricao_2 = ''
-        if len(descricao) > 59:
+        if len(descricao) < 59:
             k = 0
             for k in range(0, 59, 1):
                 descricao_1 += descricao[k]
+        elif len(descricao) > 59:
             j = 59
             for j in range(59, len(descricao), 1):
                 descricao_2 += descricao[j]
