@@ -97,7 +97,8 @@ def main():
 
     while True:
         os.system('cls')
-        print("Se você deseja gerar mais de um recibo, o recibo deve ter os dados iguais para todos recibos, exceto data, caso contrario será unitario.")
+        print("Gerador de Recibos V1.0.2.2")
+        print("Selecione uma das opções abaixo:")
         print()
         print("[1] CADASTRAR VARIOS")
         print("[2] CADASTRAR UM")
