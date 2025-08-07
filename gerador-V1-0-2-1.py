@@ -106,9 +106,6 @@ def main():
         os.system('cls')
         qtd_recibos = 0
 
-        descricao_teste_para_lista = "conformidade fiscal para obras em andamento ou obras que ja foram concluidas anteriormente."
-        lista_testes = ['Bruno_Bertol', 'Silvana_Maria_Gomes_Bertol', 1566, descricao_teste_para_lista, "06/08/2025"]
-
         if opcao_selecionada != 1 and opcao_selecionada != 2:
             break
         elif opcao_selecionada == 2:
