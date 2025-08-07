@@ -92,35 +92,39 @@ def coleta_informacao(qtd_rep):
         print(f"Recibo N°: {n_recibo} criado")
 
     print("Recibos criados!")
-                
+
+
+def menu_principal():
+    os.system('cls')
+    print("Gerador de Recibos V1.0.2.2")
+    print("Selecione uma das opções abaixo: \n")
+    print("[1] CADASTRAR VARIOS")
+    print("[2] CADASTRAR UM")
+    print("[3] SAIR")
+    opcao_selecionada = int(input("Escolha uma das opções: "))
+    
+    if opcao_selecionada == 1:
+        qtd_recibos = int(input("Digite a quantidade de recibos que deseja cadastrar: "))
+        coleta_informacao(qtd_recibos)
+    elif opcao_selecionada == 2:
+        coleta_informacao(1)
+    else:
+        print("Saindo do programa...")
+           
 def main():
 
     while True:
-        os.system('cls')
-        print("Gerador de Recibos V1.0.2.2")
-        print("Selecione uma das opções abaixo:")
-        print()
-        print("[1] CADASTRAR VARIOS")
-        print("[2] CADASTRAR UM")
-        print("[3] SAIR")
-        opcao_selecionada = int(input("Escolha uma das opções: "))
-        os.system('cls')
-        qtd_recibos = 0
+        menu_principal()
+        continuar = input("Deseja continuar? (s/n): ").strip().lower()
 
-        if opcao_selecionada != 1 and opcao_selecionada != 2:
+        if continuar != 's':
+            print("Obrigado por usar o Gerador de Recibos!")
             break
-        elif opcao_selecionada == 2:
-            print("Vamos cadastrar seu recibo: ")
-            qtd_recibos = 1
-            coleta_informacao(qtd_recibos)
         else:
-            print("Você escolheu gerar varios recibos!")
-            print("Digite um numero inteiro!")
-            qtd_recibos = int(input("Digite a quantidade de recibos que deseja cadastrar: "))
-            coleta_informacao(qtd_recibos)
+            os.system('cls')
+            print("Reiniciando o Gerador de Recibos...\n")
+            continue
 
-
-        break
 
 if (__name__ == '__main__'):
 
