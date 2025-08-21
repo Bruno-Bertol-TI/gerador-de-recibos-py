@@ -1,41 +1,91 @@
 import os
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
+from reportlab.lib import colors
+from reportlab.lib.units import inch
 from datetime import datetime
 
-def gerar_recibo(nome_beneficiado, nome_pagador, valor, descricao_1, descricao_2 , data, nome_arquivo, n_recibo):
-    
-    largura, altura = A4
+PAGE_WIDTH, PAGE_HEIGHT = A4
+HALF_HEIGHT = PAGE_HEIGHT / 2
 
-    c = canvas.Canvas(nome_arquivo, pagesize=A4)
-    c.setFont("Helvetica-Bold", 18)
-    c.drawCentredString(largura / 2, altura - 50, "RECIBO DE PAGAMENTO")
+def desenhar_recibo(c, dados, posicao, caminho_logo=None, rodape_texto="Empresa XYZ - CNPJ 00.000.000/0001-00"):
+    """
+    posicao = 0 (recibo em cima), 1 (recibo embaixo)
+    """
+    y_base = HALF_HEIGHT if posicao == 1 else 0
+    margem = 25
+    largura_area = PAGE_WIDTH - 2*margem
+    altura_area = HALF_HEIGHT - 2*margem
 
-    c.drawString
+    # borda
+    c.setStrokeColor(colors.black)
+    c.setLineWidth(1)
+    c.rect(margem, y_base + margem, largura_area, altura_area, stroke=1, fill=0)
 
+    pos_y = y_base + HALF_HEIGHT - 60
+    margem_texto = margem + 20
+
+    # logo no canto esquerdo
+    if caminho_logo:
+        largura_logo = 80
+        altura_logo = 40
+        c.drawImage(caminho_logo, margem_texto, pos_y - 20, largura_logo, altura_logo, preserveAspectRatio=True, mask="auto")
+
+    # título centralizado
     c.setFont("Helvetica-Bold", 14)
-    c.drawString(50, altura - 50, f"RECIBO N°: {n_recibo}")
+    c.drawCentredString(PAGE_WIDTH/2, pos_y, "RECIBO DE PAGAMENTO")
+    pos_y -= 50
 
-    c.setFont("Helvetica", 12)
-    c.drawString(50, altura - 100, f"Eu, {nome_beneficiado}. ")
+    # número do recibo
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(margem_texto, pos_y, f"RECIBO Nº: {dados['numero']}")
+    pos_y -= 25
 
-    c.drawString(50, altura - 120, f"Declaro que estou recebendo de: {nome_pagador},")
+    # corpo do recibo
+    c.setFont("Helvetica", 11)
+    c.drawString(margem_texto, pos_y, f"Eu, {dados['beneficiado']},")
+    pos_y -= 20
+    c.drawString(margem_texto, pos_y, f"declaro que estou recebendo de: {dados['pagador']},")
+    pos_y -= 20
+    c.drawString(margem_texto, pos_y, f"a importância da quantia de: R$ {dados['valor']:.2f}")
+    pos_y -= 20
+    c.drawString(margem_texto, pos_y, f"pelos serviços de: {dados['descricao_1']}")
+    pos_y -= 20
+    if dados['descricao_2']:
+        c.drawString(margem_texto, pos_y, dados['descricao_2'])
+        pos_y -= 20
+    c.drawString(margem_texto, pos_y, f"na data: {dados['data']}")
+    pos_y -= 40
 
-    c.drawString(50, altura - 140, f"a importancia da quantia de: R$ {valor}") 
+    # assinatura
+    c.drawString(margem_texto, pos_y, "Local: ________________________________")
+    pos_y -= 30
+    c.drawString(margem_texto, pos_y, "Data: ____/____/__________")
+    pos_y -= 30
+    c.drawString(margem_texto, pos_y, "Assinatura: __________________________")
+    pos_y -= 50
 
-    c.drawString(50, altura - 160, f"por ter prestado o(s) serviço(s) de: {descricao_1}") 
+    # rodapé
+    c.setFont("Helvetica-Oblique", 9)
+    c.setFillColor(colors.grey)
+    c.drawCentredString(PAGE_WIDTH/2, y_base + 20, rodape_texto)
+    c.setFillColor(colors.black)
 
-    if (descricao_2 and descricao_2.strip()):
-        c.drawString(50, altura - 180, f"{descricao_2}") 
-        c.drawString(50, altura - 200, f"na data: {data}")
-    else:
-        c.drawString(50, altura - 180, f"na data: {data}")
 
-    c.drawString(50, altura - 250, f"Local: ________________________________________, na data: _____/___________/_____.")
-    c.drawString(50, altura - 300, f"Assinatura:____________________________________")
+def gerar_recibos(lista_recibos, nome_arquivo, caminho_logo=None):
+    c = canvas.Canvas(nome_arquivo, pagesize=A4)
+
+    for i, dados in enumerate(lista_recibos):
+        posicao = i % 2
+        desenhar_recibo(c, dados, posicao, caminho_logo)
+
+        # a cada 2 recibos → nova página
+        if posicao == 1 or i == len(lista_recibos) - 1:
+            c.showPage()
 
     c.save()
-    print(f"recibo salvo como: {nome_arquivo}")
+    print(f"✅ Recibos salvos em: {nome_arquivo}")
+
 
 def coleta_informacao(qtd_rep, repetir):
 
@@ -58,16 +108,30 @@ def gerar_recibo_diferentes(qtd_rep):
             data = f"{dia}/{mes}/{ano}"
             n_recibo = padronizar_numero_recibo(i)
             nome_arquivo = f"recibo_{pagar}_{n_recibo}.pdf"
-            gerar_recibo(receber, pagar, valor, descricao_1, descricao_2, data, nome_arquivo, n_recibo)
+            gerar_recibos(receber, pagar, valor, descricao_1, descricao_2, data, nome_arquivo, n_recibo)
 
 def gerar_recibo_identicos(qtd_rep, repetir):
-        dias, meses, anos = coleta_datas_recibos_identicos(qtd_rep, repetir)
-        receber, pagar, valor, descricao_1, descricao_2 = coleta_basica_informacao()
-        for i in range(1, qtd_rep + 1):
-            n_recibo = padronizar_numero_recibo(i)
-            data = f"{dias[i-1]}/{meses[i-1]}/{anos[i-1]}"
-            nome_arquivo = f"recibo_{pagar}_{n_recibo}.pdf"
-            gerar_recibo(receber, pagar, valor, descricao_1, descricao_2, data, nome_arquivo, n_recibo)
+    dias, meses, anos = coleta_datas_recibos_identicos(qtd_rep, repetir)
+    receber, pagar, valor, descricao_1, descricao_2 = coleta_basica_informacao()
+
+    lista_recibos = []
+    for i in range(1, qtd_rep + 1):
+        n_recibo = padronizar_numero_recibo(i)
+        data = f"{dias[i-1]}/{meses[i-1]}/{anos[i-1]}"
+
+        recibo = {
+            "numero": n_recibo,
+            "beneficiado": receber,
+            "pagador": pagar,
+            "valor": valor,
+            "descricao_1": descricao_1,
+            "descricao_2": descricao_2,
+            "data": data
+        }
+        lista_recibos.append(recibo)
+
+    nome_arquivo = f"recibos_identicos.pdf"
+    gerar_recibos(lista_recibos, nome_arquivo, caminho_logo="logo.png")
 
 def coleta_basica_informacao():
     os.system('cls')
